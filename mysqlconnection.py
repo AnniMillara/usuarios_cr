@@ -66,8 +66,9 @@ class MySQLConnection:
                 # --------------------------------------------------
                 else:
                     return None
+            
             except Exception as e:
-                print("Something went wrong:")
+                print("Ups algo ha salido mal :(")
                 print(e)
                 return False
             finally:

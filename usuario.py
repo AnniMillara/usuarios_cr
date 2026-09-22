@@ -1,11 +1,7 @@
-# ==========================================================
 # MODELO USUARIO
-# ==========================================================
 from mysqlconnection import connectToMySQL
 
-# ==========================================================
 # CLASE USUARIO
-# ==========================================================
 class Usuario:
     """
     Representa un registro de la tabla usuarios.
@@ -22,21 +18,16 @@ class Usuario:
         self.created_at = data["created_at"]
         self.updated_at = data["updated_at"]
 
-
-    # ======================================================
     # READ
     # OBTENER TODOS LOS USUARIOS
-    # ======================================================
     @classmethod
     def get_all(cls):
         """
         Recupera todos los usuarios de la base de datos.
-
         Retorna una lista de objetos Usuario.
         """
-        # --------------------------------------------------
-        # CONSULTA
-        # --------------------------------------------------
+        
+        # Consulta
         query = """
             SELECT
                 id,
@@ -49,48 +40,76 @@ class Usuario:
             ORDER BY id;
         """
         
-        # --------------------------------------------------
         # EJECUTAR CONSULTA
-        # --------------------------------------------------
         resultados = connectToMySQL(
             "esquema_usuarios"
         ).query_db(query)
         
-        # --------------------------------------------------
         # CREAR LISTA DE OBJETOS
-        # --------------------------------------------------
         usuarios = []
         
-        # --------------------------------------------------
         # CONVERTIR CADA DICCIONARIO
         # EN UN OBJETO Usuario
-        # --------------------------------------------------
         for usuario in resultados:
             usuarios.append(
                 cls(usuario)
             )
             
-        # --------------------------------------------------
-        # RETORNAR RESULTADOS
-        # --------------------------------------------------
         return usuarios
 
+    # READ
+    # Obtiene usuarios por ids
+    @classmethod
+    def get_by_id(cls, id):
+        """
+        Busca un usuario específico mediante su ID.
+        Si existe:
+            devuelve un objeto Usuario.
+        Si no existe:
+            devuelve None.
+        """
+        
+        query = """
+            SELECT
+                id,
+                nombre,
+                apellido,
+                email,
+                created_at,
+                updated_at
+            FROM usuarios
+            WHERE id = %(id)s;
+        """
+        
+        data = {
+            "id": id
+        }
+        
+        resultados = connectToMySQL(
+            "esquema_usuarios"
+        ).query_db(
+            query,
+            data
+        )
+        
+        if resultados:
+            return cls(
+                resultados[0]
+            )
+        return None
 
-    # ======================================================
     # CREATE
-    # CREAR NUEVO USUARIO
-    # ======================================================
+    # Crea nuevo usuario
     @classmethod
     def save(cls, data):
         """
         Inserta un nuevo usuario en la base de datos.
-
         Recibe un diccionario con:
         nombre
         apellido
         email
         """
-
+        
         # --------------------------------------------------
         # INSERT
         # --------------------------------------------------
@@ -120,11 +139,62 @@ class Usuario:
                 NOW()
             );
         """
-
-
+        
         # --------------------------------------------------
         # EJECUTAR INSERT
         # --------------------------------------------------
+        return connectToMySQL(
+            "esquema_usuarios"
+        ).query_db(
+            query,
+            data
+        )
+
+    # UPDATE
+    # ACTUALIZAR USUARIO
+    @classmethod
+    def update(cls, data):
+        """
+        Actualiza los datos de un usuario existente.
+        data debe contener:
+        id
+        nombre
+        apellido
+        email
+        """
+        
+        query = """
+            UPDATE usuarios
+            SET
+                nombre = %(nombre)s,
+                apellido = %(apellido)s,
+                email = %(email)s,
+                updated_at = NOW()
+            WHERE id = %(id)s;
+        """
+        return connectToMySQL(
+            "esquema_usuarios"
+        ).query_db(
+            query,
+            data
+        )
+
+    # DELETE
+    # ELIMINAR USUARIO
+    @classmethod
+    def delete(cls, id):
+        """
+        Elimina un usuario utilizando su ID.
+        """
+        
+        query = """
+            DELETE FROM usuarios
+            WHERE id = %(id)s;
+        """
+        data = {
+            "id": id
+        }
+        
         return connectToMySQL(
             "esquema_usuarios"
         ).query_db(
